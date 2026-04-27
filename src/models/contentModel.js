@@ -127,10 +127,8 @@ export async function findLiveCandidates({ teacherId, subject }) {
   const where = [
     "c.uploaded_by = :teacherId",
     "c.status = 'approved'",
-    "c.start_time IS NOT NULL",
-    "c.end_time IS NOT NULL",
-    "c.start_time <= UTC_TIMESTAMP()",
-    "c.end_time >= UTC_TIMESTAMP()",
+    "c.start_time <= NOW()",
+    "c.end_time >= NOW()",
     "(:subject IS NULL OR c.subject = :subject)",
   ];
 
@@ -139,7 +137,7 @@ export async function findLiveCandidates({ teacherId, subject }) {
      FROM content c
      ${contentJoins}
      WHERE ${where.join(" AND ")}
-     ORDER BY c.subject ASC, cs.rotation_order ASC, c.created_at ASC`,
+     ORDER BY c.subject ASC, cs.rotation_order ASC`,
     params,
   );
 }
