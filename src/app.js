@@ -25,6 +25,29 @@ app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+app.get("/seed", async (req, res) => {
+  try {
+    const { registerUser } = await import("./services/authService.js");
+
+    await registerUser({
+      name: "Principal User",
+      email: "principal@example.com",
+      password: "Password123!",
+      role: "principal",
+    });
+
+    await registerUser({
+      name: "Teacher User",
+      email: "teacher@example.com",
+      password: "Password123!",
+      role: "teacher",
+    });
+
+    res.send("✅ Seed Done");
+  } catch (err) {
+    res.send(err.message);
+  }
+});
 app.use("/uploads", express.static(path.resolve(__dirname, "..", env.uploadDir)));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(
