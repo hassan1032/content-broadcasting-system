@@ -132,16 +132,38 @@
         "responses": { "200": { "description": "Rejected content" } }
       }
     },
-    "/content/live/{teacherId}": {
-      "get": {
-        "summary": "Public live broadcast for one teacher",
-        "parameters": [
-          { "name": "teacherId", "in": "path", "required": true, "schema": { "type": "integer" } },
-          { "name": "subject", "in": "query", "schema": { "type": "string" } }
-        ],
-        "responses": { "200": { "description": "Active content or empty response" } }
+   "/content/live/{teacherId}": {
+  "get": {
+    "summary": "Public live broadcast for one teacher",
+    "description": "Fetch currently active content for a specific teacher. Note: teacherId is the user's ID (uploaded_by), not the content ID.",
+    "parameters": [
+      {
+        "name": "teacherId",
+        "in": "path",
+        "required": true,
+        "description": "ID of the teacher (uploaded_by field, not content ID)",
+        "schema": {
+          "type": "integer",
+          "example": 2
+        }
+      },
+      {
+        "name": "subject",
+        "in": "query",
+        "description": "Optional subject filter (e.g., english, hindi)",
+        "schema": {
+          "type": "string",
+          "example": "english"
+        }
       }
-    },
+    ],
+    "responses": {
+      "200": {
+        "description": "Active content or empty response"
+      }
+    }
+  }
+},
     "/users": {
       "get": {
         "summary": "List users (principal only)",
