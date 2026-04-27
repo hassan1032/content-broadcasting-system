@@ -118,21 +118,21 @@ export async function rejectContent({ id, rejectedBy, reason }) {
   return findContentById(id);
 }
 
-export async function findLiveCandidates({ teacherId, subject, now }) {
-  const params = { teacherId, now };
+export async function findLiveCandidates({ teacherId, subject }) {
+  const params = {
+    teacherId,
+    subject: subject ?? null,
+  };
+
   const where = [
     "c.uploaded_by = :teacherId",
     "c.status = 'approved'",
     "c.start_time IS NOT NULL",
     "c.end_time IS NOT NULL",
-    "c.start_time <= :now",
-    "c.end_time >= :now",
+    "c.start_time <= UTC_TIMESTAMP()",
+    "c.end_time >= UTC_TIMESTAMP()",
+    "(:subject IS NULL OR c.subject = :subject)",
   ];
-
-  if (subject) {
-    where.push("c.subject = :subject");
-    params.subject = subject;
-  }
 
   return query(
     `SELECT ${contentSelect}
