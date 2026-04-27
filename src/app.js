@@ -25,7 +25,19 @@ app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+app.get("/fix-db", async (req, res) => {
+  try {
+    const { query } = await import("./config/db.js");
 
+    await query(`ALTER TABLE content ADD COLUMN rejection_reason TEXT`);
+    await query(`ALTER TABLE content ADD COLUMN approved_by BIGINT UNSIGNED`);
+    await query(`ALTER TABLE content ADD COLUMN approved_at TIMESTAMP NULL`);
+
+    res.send("✅ DB Fixed");
+  } catch (err) {
+    res.send(err.message);
+  }
+});
 app.use("/uploads", express.static(path.resolve(__dirname, "..", env.uploadDir)));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(
