@@ -2,144 +2,180 @@
 
 Backend-only assignment implementation for teacher content uploads, principal approval, and public subject-wise broadcasting with scheduling and rotation.
 
-## Tech Stack
+---
 
-- Node.js + Express
-- MySQL
-- JWT authentication
-- bcrypt password hashing
-- Multer local file uploads
-- Zod validation
-- Swagger UI API documentation
-- Node test runner for scheduling logic
+## 🚀 Deployment & Access
 
-## Setup
+### 🌍 Production
+- API Base URL  
+  https://content-broadcasting-system-production-3099.up.railway.app
+
+- Swagger Docs  
+  https://content-broadcasting-system-production-3099.up.railway.app/docs
+
+
+### 💻 Local
+- API Base URL  
+  http://localhost:4000
+
+- Swagger Docs  
+  http://localhost:4000/docs
+
+---
+
+## 🧑‍💻 Tech Stack
+
+* Node.js + Express
+* MySQL (Railway)
+* JWT authentication
+* bcrypt password hashing
+* Multer (file uploads)
+* Zod validation
+* Swagger UI
+* Node test runner
+
+---
+
+## 🔐 Test Credentials
+
+**Principal**
+
+* Email: [principal@example.com](mailto:principal@example.com)
+* Password: Password123!
+
+**Teacher**
+
+* Email: [teacher@example.com](mailto:teacher@example.com)
+* Password: Password123!
+
+---
+
+## ⚙️ Local Setup
 
 1. Install dependencies:
 
-   ```bash
-   npm install
-   ```
-
-2. Create a MySQL database and tables:
-
-   ```bash
-   mysql -u root -p < database/schema.sql
-   ```
-
-3. Configure environment:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Update DB credentials and `JWT_SECRET` in `.env`.
-
-4. Seed demo users:
-
-   ```bash
-   npm run seed
-   ```
-
-5. Start the API:
-
-   ```bash
-   npm run dev
-   ```
-
-The server runs at `http://localhost:4000`. Swagger docs are available at `http://localhost:4000/docs`.
-
-## Demo Users
-
-These are created by `npm run seed` unless you change the seed env vars.
-
-- Principal: `principal@example.com` / `Password123!`
-- Teacher: `teacher@example.com` / `Password123!`
-
-## Main API Flow
-
-1. Login:
-
-   ```http
-   POST /api/auth/login
-   ```
-
-2. Teacher uploads content:
-
-   ```http
-   POST /api/content
-   Authorization: Bearer <teacher-token>
-   Content-Type: multipart/form-data
-   ```
-
-   Required fields: `title`, `subject`, `file`, `start_time`, `end_time`.
-   Optional fields: `description`, `rotation_duration_minutes`.
-
-3. Principal approves or rejects:
-
-   ```http
-   PATCH /api/content/:id/approve
-   PATCH /api/content/:id/reject
-   ```
-
-4. Students access live content:
-
-   ```http
-   GET /api/content/live/:teacherId
-   GET /api/content/live/:teacherId?subject=maths
-   ```
-
-If no approved and scheduled content is active, the API returns:
-
-```json
-{ "message": "No content available", "data": [] }
+```bash
+npm install
 ```
 
-## Scheduling Logic
+2. Configure environment:
 
-Only content that is approved and inside its teacher-defined `start_time` to `end_time` window is eligible.
+```bash
+cp .env.example .env
+```
 
-Each subject rotates independently. For example, Maths content can rotate every five minutes while Science content follows its own cycle. The service calculates the elapsed minutes from the earliest active start time in that subject, applies modulo arithmetic over the total cycle duration, and returns the current item.
+3. Setup database:
 
-## Architecture Notes
+```bash
+mysql -u root -p < database/schema.sql
+```
 
-- `src/controllers`: HTTP request/response layer.
-- `src/routes`: Route declarations and role guards.
-- `src/services`: Business logic, including approval and rotation.
-- `src/models`: SQL access layer.
-- `src/middlewares`: JWT auth, RBAC, upload handling, and errors.
-- `database/schema.sql`: MySQL schema with indexes for live content lookup.
-- `docs/openapi.json`: Swagger/OpenAPI documentation.
+4. Seed users:
 
-Private routes require JWT auth. Principal-only actions are isolated from teacher-only upload actions. Password hashes are never returned in API responses.
+```bash
+npm run seed
+```
 
-## Validation and Edge Cases
+5. Run server:
 
-- Uploads allow only JPG, PNG, and GIF.
-- File size limit is 10MB.
-- `title`, `subject`, `start_time`, and `end_time` are mandatory.
-- Rejection requires a reason.
-- Pending and rejected content are never exposed by public live endpoints.
-- Invalid or inactive subject filters return an empty response instead of an error.
+```bash
+npm run dev
+```
+---
 
-## Tests
+## 📌 Main API Flow
 
-Run the scheduling unit tests:
+### 1. Login
+
+POST /api/auth/login
+
+---
+
+### 2. Upload Content (Teacher)
+
+POST /api/content
+Authorization: Bearer <teacher-token>
+
+---
+
+### 3. Approve / Reject (Principal)
+
+PATCH /api/content/:id/approve
+PATCH /api/content/:id/reject
+
+---
+
+### 4. Live Content (Public)
+
+GET /api/content/live/:teacherId
+GET /api/content/live/:teacherId?subject=maths
+
+---
+
+## 🔄 Scheduling Logic
+
+* Only approved content within start_time and end_time is served
+* Each subject rotates independently
+* Rotation uses modulo logic on total duration
+* Based on elapsed time since earliest active content
+
+---
+
+## 🏗️ Architecture
+
+* controllers → request handling
+* routes → API + RBAC
+* services → business logic
+* models → DB queries
+* middlewares → auth, validation
+* docs → Swagger
+
+---
+
+## ⚠️ Validation Rules
+
+* Only JPG, PNG, GIF allowed
+* Max file size: 10MB
+* Required:
+
+  * title
+  * subject
+  * start_time
+  * end_time
+
+---
+
+## 🧪 Testing
 
 ```bash
 npm test
 ```
 
-## Scalability Notes
+---
 
-- The public live endpoint has rate limiting enabled.
-- Live lookups are indexed by teacher, subject, status, and schedule window.
-- In production, `/api/content/live` is a good Redis caching candidate with a short TTL based on the next rotation boundary.
-- Uploads use local storage for the assignment; S3-compatible storage can replace the Multer disk destination without changing content approval logic.
-- Approval events can be pushed to a queue for audit logging, notifications, or analytics.
+## 📈 Scalability Notes
 
-## Assumptions
+* Rate limiting on live API
+* Indexed DB queries
+* Redis caching possible
+* S3-compatible storage ready
+* Event-based approval extension possible
 
-- MySQL is used because the assignment allows PostgreSQL or MySQL.
-- A principal creates additional users through `POST /api/auth/register`; demo users are available through the seed script.
-- Uploaded content is image-based because the assignment validation section specifies JPG, PNG, and GIF.
+---
+
+## 📌 Assumptions
+
+* MySQL used (allowed in assignment)
+* Image-based content only
+* Demo users seeded
+* RBAC enforced
+
+---
+
+## 🌍 Deployment
+
+* Backend: Railway
+* Database: Railway MySQL
+* API Docs: Swagger
+
+---
