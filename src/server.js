@@ -8,8 +8,11 @@ async function startServer() {
     console.log("DB Connected");
 
     app.listen(env.port, () => {
-      console.log(`local Running on ${env.port}`);
-      console.log(`Swagger docs available at http://localhost:${env.port}/docs`);
+      const baseUrl =
+        process.env.PUBLIC_BASE_URL || `http://localhost:${env.port}`;
+
+      console.log(`🚀 Server running on port ${env.port}`);
+      console.log(`📚 Swagger docs available at ${baseUrl}/docs`);
     });
   } catch (error) {
     console.error("DB error:");
