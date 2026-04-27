@@ -1,0 +1,151 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Content Broadcasting System API",
+    "version": "1.0.0",
+    "description": "Backend API for teacher content upload, principal approval, and public live broadcasting."
+  },
+  "servers": [{ "url": "http://localhost:4000/api" }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "Login": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "example": "teacher@example.com" },
+          "password": { "type": "string", "example": "Password123!" }
+        }
+      },
+      "Register": {
+        "type": "object",
+        "required": ["name", "email", "password", "role"],
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "password": { "type": "string" },
+          "role": { "type": "string", "enum": ["principal", "teacher"] }
+        }
+      },
+      "Reject": {
+        "type": "object",
+        "required": ["reason"],
+        "properties": { "reason": { "type": "string", "example": "Wrong file uploaded" } }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login as a principal or teacher",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Login" } } }
+        },
+        "responses": { "200": { "description": "JWT token and user profile" } }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Create a user (principal only)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Register" } } }
+        },
+        "responses": { "201": { "description": "Created user without password hash" } }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get the current authenticated user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Current user" } }
+      }
+    },
+    "/content": {
+      "get": {
+        "summary": "List content. Teachers see their own content; principals see all content.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["uploaded", "pending", "approved", "rejected"] } },
+          { "name": "subject", "in": "query", "schema": { "type": "string" } },
+          { "name": "teacherId", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Content list" } }
+      },
+      "post": {
+        "summary": "Upload teacher content with schedule",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "subject", "file", "start_time", "end_time"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "subject": { "type": "string", "example": "maths" },
+                  "file": { "type": "string", "format": "binary" },
+                  "start_time": { "type": "string", "format": "date-time" },
+                  "end_time": { "type": "string", "format": "date-time" },
+                  "rotation_duration_minutes": { "type": "integer", "example": 5 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Pending content created" } }
+      }
+    },
+    "/content/pending": {
+      "get": {
+        "summary": "List pending content (principal only)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Pending content" } }
+      }
+    },
+    "/content/{id}/approve": {
+      "patch": {
+        "summary": "Approve content (principal only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Approved content" } }
+      }
+    },
+    "/content/{id}/reject": {
+      "patch": {
+        "summary": "Reject content with a reason (principal only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Reject" } } }
+        },
+        "responses": { "200": { "description": "Rejected content" } }
+      }
+    },
+    "/content/live/{teacherId}": {
+      "get": {
+        "summary": "Public live broadcast for one teacher",
+        "parameters": [
+          { "name": "teacherId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "subject", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Active content or empty response" } }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "List users (principal only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "role", "in": "query", "schema": { "type": "string", "enum": ["principal", "teacher"] } }],
+        "responses": { "200": { "description": "User list" } }
+      }
+    }
+  }
+}
