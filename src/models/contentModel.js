@@ -127,8 +127,8 @@ export async function findLiveCandidates({ teacherId, subject }) {
   const where = [
     "c.uploaded_by = :teacherId",
     "c.status = 'approved'",
-    "c.start_time <= NOW()",
-    "c.end_time >= NOW()",
+    "c.start_time <= NOW() + INTERVAL 6 HOUR",
+    "c.end_time >= NOW() - INTERVAL 6 HOUR",
     "(:subject IS NULL OR c.subject = :subject)",
   ];
 
