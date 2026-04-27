@@ -5,7 +5,10 @@
     "version": "1.0.0",
     "description": "Backend API for teacher content upload, principal approval, and public live broadcasting."
   },
-  "servers": [{ "url": "http://localhost:4000/api" }],
+  "servers": [
+  { "url": "http://localhost:4000/api", "description": "Local" },
+  { "url": "https://content-broadcasting-system-production-3099.up.railway.app/api", "description": "Production" }
+],
   "components": {
     "securitySchemes": {
       "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
