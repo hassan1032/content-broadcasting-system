@@ -71,7 +71,10 @@ export async function rejectContentByPrincipal({ id, principalId, reason }) {
 }
 
 export async function getLiveContent({ teacherId, subject, now = new Date() }) {
-  const candidates = await findLiveCandidates({ teacherId, subject: subject?.toLowerCase(), now });
+  const candidates = await findLiveCandidates({
+    teacherId,
+    subject: subject?.toLowerCase(),
+  });
   const active = selectActiveContent(candidates, now);
 
   if (!active || (Array.isArray(active) && !active.length)) {
