@@ -37,14 +37,18 @@ app.get("/setup-db", async (req, res) => {
         password_hash VARCHAR(255) NOT NULL,
         role ENUM('principal','teacher') NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
+    `);
 
+    await query(`
       CREATE TABLE IF NOT EXISTS content_slots (
         id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         subject VARCHAR(80) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
+    `);
 
+    await query(`
       CREATE TABLE IF NOT EXISTS content (
         id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         title VARCHAR(180) NOT NULL,
@@ -59,15 +63,17 @@ app.get("/setup-db", async (req, res) => {
         start_time DATETIME,
         end_time DATETIME,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
+    `);
 
+    await query(`
       CREATE TABLE IF NOT EXISTS content_schedule (
         id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         content_id BIGINT UNSIGNED NOT NULL,
         slot_id BIGINT UNSIGNED NOT NULL,
         rotation_order INT UNSIGNED,
         duration_minutes INT UNSIGNED DEFAULT 5
-      );
+      )
     `);
 
     res.send("✅ DB Ready");
