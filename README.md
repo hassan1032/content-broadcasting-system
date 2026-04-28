@@ -8,7 +8,7 @@ Backend-only assignment implementation for teacher content uploads, principal ap
 
 ### 🌍 Production
 - API Base URL  
-  https://content-broadcasting-system-production-3099.up.railway.app
+  https://content-broadcasting-system-production-3099.up.railway.app/health
 
 - Swagger Docs  
   https://content-broadcasting-system-production-3099.up.railway.app/docs

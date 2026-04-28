@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
 
 app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "Content Broadcasting API is running 🚀" });
 });
 
 app.use("/uploads", express.static(path.resolve(__dirname, "..", env.uploadDir)));
